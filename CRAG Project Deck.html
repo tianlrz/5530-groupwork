@@ -1,0 +1,1349 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>CRAG Reproduction — Project Deck</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Raleway:wght@300;400;500;600;700&family=Barlow:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="deck-stage.js"></script>
+<style>
+  :root {
+    /* Academic paper palette */
+    --paper:    #FAFAF7;
+    --paper-2:  #F2F1EB;
+    --rule:     #D9D6CC;
+    --rule-2:   #B8B3A4;
+    --ink:      #14181F;
+    --ink-2:    #2B313B;
+    --muted:    #6B7280;
+    --muted-2:  #8A8F99;
+    --navy:     #1F2937;
+    --accent:   #2563EB;        /* blue (LLM-only) */
+    --accent-2: #059669;        /* green (RAG) */
+    --warn:     #D97706;        /* amber (missing) */
+    --bad:      #DC2626;        /* red (hallucination) */
+
+    --serif: "Raleway", "Helvetica Neue", Arial, sans-serif;
+    --sans:  "Barlow", -apple-system, "Segoe UI", "Helvetica Neue", sans-serif;
+    --mono:  "IBM Plex Mono", ui-monospace, "Menlo", monospace;
+  }
+
+  html, body { background: #0a0a0a; }
+
+  deck-stage {
+    background: var(--paper);
+    color: var(--ink);
+    font-family: var(--sans);
+  }
+
+  /* ---------- Slide frame ---------- */
+  .slide {
+    position: relative;
+    box-sizing: border-box;
+    padding: 90px 110px 96px;
+    background: var(--paper);
+    color: var(--ink);
+    overflow: hidden;
+  }
+  .slide.dark {
+    background: #131820;
+    color: #F4F1EA;
+  }
+  .slide.cream { background: var(--paper-2); }
+
+  /* Running header bar */
+  .runner {
+    position: absolute; left: 110px; right: 110px; top: 56px;
+    display: flex; align-items: baseline; justify-content: space-between;
+    font-family: var(--sans);
+    font-size: 24px;
+    color: var(--muted);
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    font-weight: 500;
+  }
+  .runner .mark { color: var(--ink); font-weight: 600; }
+  .slide.dark .runner { color: #8B97A8; }
+  .slide.dark .runner .mark { color: #F4F1EA; }
+
+  .runner-rule {
+    position: absolute; left: 110px; right: 110px; top: 92px;
+    height: 1px; background: var(--rule);
+  }
+  .slide.dark .runner-rule { background: #2A323D; }
+
+  /* footer */
+  .footer {
+    position: absolute; left: 110px; right: 110px; bottom: 40px;
+    display: flex; justify-content: space-between;
+    color: var(--muted); font-size: 24px; letter-spacing: 0.06em;
+  }
+  .slide.dark .footer { color: #6E7A8C; }
+
+  /* ---------- Typography ---------- */
+  .eyebrow {
+    font-family: var(--sans);
+    font-size: 24px;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--muted);
+    font-weight: 600;
+  }
+  .h-display {
+    font-family: var(--serif);
+    font-weight: 500;
+    font-size: 108px;
+    line-height: 1.02;
+    letter-spacing: -0.015em;
+    color: var(--ink);
+  }
+  .h-section {
+    font-family: var(--serif);
+    font-weight: 500;
+    font-size: 96px;
+    line-height: 1.04;
+    letter-spacing: -0.01em;
+  }
+  .h-title {
+    font-family: var(--serif);
+    font-weight: 500;
+    font-size: 72px;
+    line-height: 1.06;
+    letter-spacing: -0.005em;
+    color: var(--ink);
+  }
+  .h-sub {
+    font-family: var(--sans);
+    font-weight: 400;
+    font-size: 32px;
+    line-height: 1.4;
+    color: var(--muted);
+    max-width: 1300px;
+  }
+  .body { font-family: var(--sans); font-size: 30px; line-height: 1.5; color: var(--ink-2); }
+  .small { font-family: var(--sans); font-size: 24px; line-height: 1.45; color: var(--muted); }
+  .mono { font-family: var(--mono); }
+
+  .lede {
+    font-family: var(--sans);
+    font-weight: 400;
+    font-style: italic;
+    font-size: 44px;
+    line-height: 1.35;
+    color: var(--ink-2);
+    max-width: 1500px;
+  }
+
+  /* Title row + tag */
+  .title-row {
+    display: flex; align-items: baseline; gap: 24px;
+    margin-bottom: 56px;
+  }
+  .title-num {
+    font-family: var(--mono);
+    font-size: 28px;
+    color: var(--muted);
+    letter-spacing: 0.04em;
+    padding-top: 12px;
+  }
+  .title-block { flex: 1; }
+  .title-block .h-title { margin: 0 0 18px 0; }
+  .title-block .h-sub { margin: 0; }
+
+  /* ---------- Components ---------- */
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 60px; }
+  .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 48px; }
+  .grid-12 { display: grid; grid-template-columns: repeat(12, 1fr); gap: 28px; }
+
+  /* Stat block */
+  .stat {
+    border-top: 2px solid var(--ink);
+    padding-top: 22px;
+  }
+  .stat .label {
+    font-size: 24px; letter-spacing: 0.16em; text-transform: uppercase;
+    color: var(--muted); font-weight: 600;
+  }
+  .stat .value {
+    font-family: var(--serif); font-weight: 500;
+    font-size: 124px; line-height: 1; letter-spacing: -0.02em;
+    margin-top: 14px;
+  }
+  .stat .delta {
+    margin-top: 14px; font-size: 26px; color: var(--ink-2);
+  }
+  .stat.up   .delta { color: var(--accent-2); }
+  .stat.down .delta { color: var(--bad); }
+  .stat.flat .delta { color: var(--muted); }
+
+  /* Definition card */
+  .def {
+    border-left: 3px solid var(--ink);
+    padding: 8px 0 8px 28px;
+  }
+  .def .term { font-family: var(--serif); font-weight: 600; font-size: 36px; color: var(--ink); }
+  .def .desc { margin-top: 10px; font-size: 26px; color: var(--ink-2); line-height: 1.45; }
+
+  /* Numbered list */
+  .nlist { display: flex; flex-direction: column; gap: 28px; }
+  .nlist .item { display: flex; gap: 28px; align-items: baseline; }
+  .nlist .item .n {
+    font-family: var(--mono);
+    font-size: 24px; color: var(--muted); letter-spacing: 0.06em;
+    width: 56px; flex-shrink: 0; padding-top: 10px;
+  }
+  .nlist .item .t { flex: 1; }
+  .nlist .item .head {
+    font-family: var(--serif); font-weight: 600; font-size: 36px; color: var(--ink);
+  }
+  .nlist .item .sub { margin-top: 6px; font-size: 26px; color: var(--ink-2); line-height: 1.45; }
+
+  /* Tables */
+  table.tbl {
+    width: 100%;
+    border-collapse: collapse;
+    font-family: var(--sans);
+    font-size: 26px;
+  }
+  .tbl thead th {
+    text-align: left;
+    font-weight: 600; color: var(--ink);
+    border-bottom: 2px solid var(--ink);
+    padding: 16px 18px;
+    font-size: 24px;
+    letter-spacing: 0.04em;
+  }
+  .tbl tbody td {
+    padding: 18px 18px;
+    border-bottom: 1px solid var(--rule);
+    color: var(--ink-2);
+    vertical-align: top;
+  }
+  .tbl tbody tr:last-child td { border-bottom: 2px solid var(--ink); }
+  .tbl td.num, .tbl th.num { text-align: right; font-variant-numeric: tabular-nums; font-family: var(--mono); }
+  .tbl td.row-h { font-weight: 600; color: var(--ink); }
+  .tbl td.pos { color: var(--accent-2); font-family: var(--mono); }
+  .tbl td.neg { color: var(--bad); font-family: var(--mono); }
+  .tbl td.flat { color: var(--muted); font-family: var(--mono); }
+
+  .group-head th {
+    border-bottom: 1px solid var(--rule) !important;
+    font-weight: 500;
+    font-size: 24px;
+    color: var(--muted);
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    padding-bottom: 8px;
+  }
+
+  /* Pills / chips */
+  .chip {
+    display: inline-flex; align-items: center; gap: 10px;
+    padding: 8px 16px;
+    border: 1px solid var(--rule-2);
+    border-radius: 999px;
+    font-size: 24px;
+    color: var(--ink-2);
+    background: transparent;
+  }
+  .chip .dot { width: 10px; height: 10px; border-radius: 50%; background: var(--ink); }
+  .chip.blue .dot { background: var(--accent); }
+  .chip.green .dot { background: var(--accent-2); }
+  .chip.amber .dot { background: var(--warn); }
+  .chip.red .dot { background: var(--bad); }
+
+  /* Score bar (for prompt examples) */
+  .pad {
+    background: #fff;
+    border: 1px solid var(--rule);
+    padding: 28px 32px;
+  }
+  .slide.dark .pad { background: #1A2029; border-color: #2A323D; }
+
+  /* Vertical rule between two halves */
+  .vrule { width: 1px; background: var(--rule); }
+  .slide.dark .vrule { background: #2A323D; }
+
+  /* Metric vs Metric arrow */
+  .delta-row {
+    display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 28px;
+  }
+  .arrow {
+    font-family: var(--mono); font-size: 28px; color: var(--muted);
+  }
+
+  /* Big quote */
+  .quote-mark {
+    font-family: var(--serif);
+    font-size: 220px;
+    line-height: 0.6;
+    color: var(--rule-2);
+    margin-bottom: -20px;
+  }
+
+  /* Image card */
+  .figure {
+    background: #fff;
+    border: 1px solid var(--rule);
+    padding: 24px 24px 16px;
+    box-shadow: 0 1px 0 rgba(20,24,31,0.04);
+  }
+  .figure img { width: 100%; height: auto; display: block; }
+  .figure .cap {
+    margin-top: 12px;
+    font-family: var(--sans);
+    font-size: 24px; color: var(--muted); font-style: italic;
+  }
+
+  /* Two-tone bar */
+  .bar-row { display: grid; grid-template-columns: 220px 1fr 110px; align-items: center; gap: 20px; padding: 14px 0; border-bottom: 1px solid var(--rule); }
+  .bar-row:last-child { border-bottom: 2px solid var(--ink); }
+  .bar-row .nm { font-size: 26px; color: var(--ink); }
+  .bar-row .num-cell { text-align: right; font-family: var(--mono); font-size: 26px; }
+  .bar-track { position: relative; height: 16px; background: var(--paper-2); }
+  .bar-fill { position: absolute; left: 0; top: 0; bottom: 0; }
+
+  /* Legend chips */
+  .legend { display: flex; gap: 28px; align-items: center; }
+  .legend .li { display: inline-flex; align-items: center; gap: 10px; font-size: 24px; color: var(--ink-2); }
+  .legend .sw { width: 18px; height: 18px; }
+
+  /* Section header slide */
+  .section-bg {
+    position: absolute; inset: 0;
+    background: var(--paper);
+  }
+  .section-num {
+    font-family: var(--mono);
+    font-size: 28px; color: var(--muted); letter-spacing: 0.2em;
+  }
+  .small { font-size: 24px !important; }
+
+  /* hr */
+  .hr { height: 2px; background: var(--ink); width: 80px; margin: 28px 0; }
+  .hr.thin { height: 1px; background: var(--rule); width: 100%; }
+
+  /* Page number watermark for title */
+  .watermark {
+    position: absolute; right: 110px; bottom: 110px;
+    font-family: var(--mono); font-size: 24px; color: var(--muted);
+    letter-spacing: 0.14em;
+  }
+
+  /* Hide the deck's slide counter overlay since we have our own footer */
+  deck-stage::part(counter) { display: none; }
+</style>
+</head>
+<body>
+
+<deck-stage width="1920" height="1080">
+
+  <!-- ============================================================
+       01 — TITLE
+       ============================================================ -->
+  <section data-label="01 Title" class="slide">
+    <div class="runner">
+      <div class="mark">CSIT 5530 / 5520 — Group Project</div>
+      <div>April 2026</div>
+    </div>
+    <div class="runner-rule"></div>
+
+    <div style="position:absolute; left:110px; top:280px; right:110px;">
+      <div class="eyebrow" style="margin-bottom:36px;">Reproducing the CRAG benchmark</div>
+      <h1 class="h-display" style="margin:0; max-width: 1500px;">
+        Does retrieval really cure<br/>
+        the hallucinating LLM?
+      </h1>
+      <div class="hr"></div>
+      <div class="lede" style="font-style:normal; font-size:36px; color: var(--ink-2); max-width: 1300px;">
+        An empirical study of LLM-only versus RAG question answering on Qwen 3.5 9B,
+        evaluated on 811 CRAG validation samples.
+      </div>
+    </div>
+
+    <div style="position:absolute; left:110px; bottom:90px; right:110px;">
+      <div class="hr thin" style="margin-bottom:24px;"></div>
+      <div style="display:flex; justify-content: space-between; align-items: flex-end;">
+        <div>
+          <div class="small" style="margin-bottom: 8px;">Presented by</div>
+          <div class="body" style="font-family: var(--serif); font-size: 32px; color: var(--ink);">
+            LIU Rongzheng &nbsp;·&nbsp; ZHOU Nanjun &nbsp;·&nbsp; CHEN Yuting
+          </div>
+        </div>
+        <div style="text-align: right;">
+          <div class="small">Reference</div>
+          <div class="body" style="font-size:24px;">Yang et al., <em>CRAG — Comprehensive RAG Benchmark</em>, 2024</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================================
+       02 — AGENDA
+       ============================================================ -->
+  <section data-label="02 Agenda" class="slide">
+    <div class="runner"><div class="mark">Agenda</div><div>02</div></div>
+    <div class="runner-rule"></div>
+
+    <div class="title-row" style="margin-top:80px;">
+      <div class="title-num">§</div>
+      <div class="title-block">
+        <h2 class="h-title">Five questions, in order.</h2>
+        <p class="h-sub">A short walkthrough of what we built, what we measured, and what we learned along the way.</p>
+      </div>
+    </div>
+
+    <div style="margin-top:40px;">
+      <div class="nlist">
+        <div class="item"><div class="n">I.</div><div class="t">
+          <div class="head">Why does this matter?</div>
+          <div class="sub">Hallucination is the practical bottleneck for deploying LLMs as factual QA systems.</div>
+        </div></div>
+        <div class="item"><div class="n">II.</div><div class="t">
+          <div class="head">What is the CRAG benchmark?</div>
+          <div class="sub">A 4,409-question testbed across 5 domains, 8 question types, and 4 dynamism levels.</div>
+        </div></div>
+        <div class="item"><div class="n">III.</div><div class="t">
+          <div class="head">How did we measure it?</div>
+          <div class="sub">Two settings on Qwen 3.5 9B (4-bit): LLM-only versus RAG with five web pages.</div>
+        </div></div>
+        <div class="item"><div class="n">IV.</div><div class="t">
+          <div class="head">What did the numbers say?</div>
+          <div class="sub">Overall and segmented results, plus a side-by-side comparison with the original paper.</div>
+        </div></div>
+        <div class="item"><div class="n">V.</div><div class="t">
+          <div class="head">Where does this leave us?</div>
+          <div class="sub">Honest limitations, and the directions we would push next.</div>
+        </div></div>
+      </div>
+    </div>
+
+    <div class="footer"><div>CSIT 5530 / 5520 · Group Project</div><div>02 / 19</div></div>
+  </section>
+
+  <!-- ============================================================
+       03 — MOTIVATION
+       ============================================================ -->
+  <section data-label="03 Motivation" class="slide">
+    <div class="runner"><div class="mark">Motivation</div><div>03</div></div>
+    <div class="runner-rule"></div>
+
+    <div class="title-row" style="margin-top:80px;">
+      <div class="title-num">I.</div>
+      <div class="title-block">
+        <h2 class="h-title">Why LLMs hallucinate on factual QA.</h2>
+        <p class="h-sub">Parametric memory is finite, stale, and silently wrong — three properties a benchmark must expose.</p>
+      </div>
+    </div>
+
+    <div class="grid-3" style="margin-top:60px;">
+      <div>
+        <div class="eyebrow" style="margin-bottom:18px;">01 — Coverage</div>
+        <div class="hr" style="margin: 0 0 22px 0;"></div>
+        <p class="body">Long-tail facts — niche musicians, mid-cap finance, regional sports — sit beyond the training distribution.</p>
+      </div>
+      <div>
+        <div class="eyebrow" style="margin-bottom:18px;">02 — Freshness</div>
+        <div class="hr" style="margin: 0 0 22px 0;"></div>
+        <p class="body">A weight-frozen model cannot answer about events after its cutoff. Real-time prices, scores, and releases are out of reach.</p>
+      </div>
+      <div>
+        <div class="eyebrow" style="margin-bottom:18px;">03 — Confidence</div>
+        <div class="hr" style="margin: 0 0 22px 0;"></div>
+        <p class="body">Models rarely say <em>“I don't know.”</em> Wrong answers and right answers are delivered in the same fluent voice.</p>
+      </div>
+    </div>
+
+    <div style="margin-top: 80px;">
+      <div class="hr thin"></div>
+      <div class="lede" style="margin-top: 36px;">
+        Retrieval-augmented generation promises to fix all three at once.
+        The question is whether — and where — it actually does.
+      </div>
+    </div>
+
+    <div class="footer"><div>CSIT 5530 / 5520 · Group Project</div><div>03 / 19</div></div>
+  </section>
+
+  <!-- ============================================================
+       04 — CRAG BENCHMARK
+       ============================================================ -->
+  <section data-label="04 CRAG Benchmark" class="slide">
+    <div class="runner"><div class="mark">Background</div><div>04</div></div>
+    <div class="runner-rule"></div>
+
+    <div class="title-row" style="margin-top:80px;">
+      <div class="title-num">II.</div>
+      <div class="title-block">
+        <h2 class="h-title">The CRAG benchmark, in three axes.</h2>
+        <p class="h-sub">Yang et al. (2024) build a stress test for factual QA along the dimensions where retrieval most often fails.</p>
+      </div>
+    </div>
+
+    <div class="grid-12" style="margin-top: 56px; align-items: start;">
+      <div style="grid-column: span 4;">
+        <div class="eyebrow" style="margin-bottom: 18px;">Axis 1 — Domain</div>
+        <div class="hr" style="margin: 0 0 24px 0;"></div>
+        <div class="body" style="font-size:26px;">
+          <div style="display:flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid var(--rule);"><span>Finance</span><span class="mono" style="color:var(--muted);">199</span></div>
+          <div style="display:flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid var(--rule);"><span>Movie</span><span class="mono" style="color:var(--muted);">177</span></div>
+          <div style="display:flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid var(--rule);"><span>Music</span><span class="mono" style="color:var(--muted);">112</span></div>
+          <div style="display:flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid var(--rule);"><span>Open</span><span class="mono" style="color:var(--muted);">156</span></div>
+          <div style="display:flex; justify-content: space-between; padding: 10px 0;"><span>Sports</span><span class="mono" style="color:var(--muted);">167</span></div>
+        </div>
+      </div>
+
+      <div style="grid-column: span 4;">
+        <div class="eyebrow" style="margin-bottom: 18px;">Axis 2 — Question type</div>
+        <div class="hr" style="margin: 0 0 24px 0;"></div>
+        <div class="body" style="font-size:25px; line-height:1.7;">
+          <div>Simple &nbsp;·&nbsp; Simple-with-condition</div>
+          <div>Comparison &nbsp;·&nbsp; Aggregation</div>
+          <div>Multi-hop &nbsp;·&nbsp; Set</div>
+          <div>Post-processing &nbsp;·&nbsp; <em style="color:var(--bad);">False premise</em></div>
+        </div>
+        <p class="small" style="margin-top: 28px;">
+          Eight categories, ranging from a one-fact lookup to questions that require rejecting an incorrect assumption.
+        </p>
+      </div>
+
+      <div style="grid-column: span 4;">
+        <div class="eyebrow" style="margin-bottom: 18px;">Axis 3 — Temporal dynamism</div>
+        <div class="hr" style="margin: 0 0 24px 0;"></div>
+        <div class="body" style="font-size:25px; line-height:1.7;">
+          <div><strong>Static</strong> — historical facts</div>
+          <div><strong>Slow-changing</strong> — annual updates</div>
+          <div><strong>Fast-changing</strong> — daily / weekly</div>
+          <div><strong>Real-time</strong> — minutes</div>
+        </div>
+        <p class="small" style="margin-top: 28px;">
+          A facet absent from most QA benchmarks. It is exactly where LLM parametric memory breaks down.
+        </p>
+      </div>
+    </div>
+
+    <div style="margin-top: 64px; display:flex; justify-content: space-between; align-items: baseline;">
+      <div class="lede" style="font-size:36px; max-width: 1100px;">
+        We use the <strong>811-sample validation split</strong>, which preserves all three axes.
+      </div>
+      <div class="small" style="font-family: var(--mono);">huggingface.co/datasets/Quivr/CRAG</div>
+    </div>
+
+    <div class="footer"><div>CSIT 5530 / 5520 · Group Project</div><div>04 / 19</div></div>
+  </section>
+
+  <!-- ============================================================
+       05 — OBJECTIVES
+       ============================================================ -->
+  <section data-label="05 Objectives" class="slide cream">
+    <div class="runner"><div class="mark">Project Scope</div><div>05</div></div>
+    <div class="runner-rule"></div>
+
+    <div class="title-row" style="margin-top:80px;">
+      <div class="title-num">§</div>
+      <div class="title-block">
+        <h2 class="h-title">Three objectives for this reproduction.</h2>
+        <p class="h-sub">A faithful smaller-scale replication, with one constrained question we wanted to answer ourselves.</p>
+      </div>
+    </div>
+
+    <div class="grid-3" style="margin-top: 80px; gap: 64px;">
+      <div>
+        <div style="font-family: var(--serif); font-weight:500; font-size: 140px; line-height: 1; color: var(--ink); letter-spacing: -0.02em;">01</div>
+        <div class="hr" style="margin: 24px 0;"></div>
+        <div style="font-family: var(--serif); font-weight: 500; font-size: 40px; line-height: 1.2; color: var(--ink); margin-bottom: 16px;">
+          Reproduce the LLM-only and Task 1 settings from the CRAG paper.
+        </div>
+        <p class="body" style="font-size: 26px; color: var(--muted);">
+          Same prompts, same metrics, same dataset split.
+        </p>
+      </div>
+      <div>
+        <div style="font-family: var(--serif); font-weight:500; font-size: 140px; line-height: 1; color: var(--ink); letter-spacing: -0.02em;">02</div>
+        <div class="hr" style="margin: 24px 0;"></div>
+        <div style="font-family: var(--serif); font-weight: 500; font-size: 40px; line-height: 1.2; color: var(--ink); margin-bottom: 16px;">
+          Run it on consumer hardware with a 9B model.
+        </div>
+        <p class="body" style="font-size: 26px; color: var(--muted);">
+          Qwen 3.5 9B in 4-bit on a single 12 GB GPU — versus the paper's 70B baseline.
+        </p>
+      </div>
+      <div>
+        <div style="font-family: var(--serif); font-weight:500; font-size: 140px; line-height: 1; color: var(--ink); letter-spacing: -0.02em;">03</div>
+        <div class="hr" style="margin: 24px 0;"></div>
+        <div style="font-family: var(--serif); font-weight: 500; font-size: 40px; line-height: 1.2; color: var(--ink); margin-bottom: 16px;">
+          Find where retrieval helps — and where it does not.
+        </div>
+        <p class="body" style="font-size: 26px; color: var(--muted);">
+          Slice the 811 results by domain, dynamism, and question type.
+        </p>
+      </div>
+    </div>
+
+    <div class="footer"><div>CSIT 5530 / 5520 · Group Project</div><div>05 / 19</div></div>
+  </section>
+
+  <!-- ============================================================
+       06 — EXPERIMENTAL SETUP
+       ============================================================ -->
+  <section data-label="06 Setup" class="slide">
+    <div class="runner"><div class="mark">Method</div><div>06</div></div>
+    <div class="runner-rule"></div>
+
+    <div class="title-row" style="margin-top:80px;">
+      <div class="title-num">III.</div>
+      <div class="title-block">
+        <h2 class="h-title">Experimental setup.</h2>
+        <p class="h-sub">A single 9B model, 4-bit quantized, evaluated on every CRAG validation sample — twice.</p>
+      </div>
+    </div>
+
+    <div class="grid-12" style="margin-top: 56px; align-items: stretch;">
+      <div style="grid-column: span 5;">
+        <div class="eyebrow" style="margin-bottom: 16px;">Model</div>
+        <div class="hr" style="margin: 0 0 22px 0;"></div>
+        <div style="font-family: var(--serif); font-size: 48px; font-weight: 500; line-height: 1.1; margin-bottom: 18px;">
+          Qwen 3.5 9B
+        </div>
+        <p class="body" style="font-size:26px; color: var(--ink-2);">
+          Vision-language model, text-only path.<br/>
+          BitsAndBytes 4-bit NF4 quantization.<br/>
+          ~5.9 GB VRAM after loading.
+        </p>
+
+        <div class="eyebrow" style="margin: 40px 0 16px;">Hardware</div>
+        <div class="hr" style="margin: 0 0 22px 0;"></div>
+        <p class="body" style="font-size: 26px;">
+          NVIDIA RTX 5070 · 12 GB VRAM<br/>
+          Single GPU, batch size of one.
+        </p>
+      </div>
+
+      <div style="grid-column: span 7; padding-left: 40px; border-left: 1px solid var(--rule);">
+        <div class="eyebrow" style="margin-bottom: 16px;">Two settings</div>
+        <div class="hr" style="margin: 0 0 26px 0;"></div>
+
+        <div class="def" style="border-left-color: var(--accent); margin-bottom: 32px;">
+          <div class="term" style="color: var(--accent);">A. LLM-only</div>
+          <div class="desc">
+            The model answers from parametric knowledge alone — no retrieval, no context, no tools. A pure memory test.
+          </div>
+        </div>
+
+        <div class="def" style="border-left-color: var(--accent-2); margin-bottom: 32px;">
+          <div class="term" style="color: var(--accent-2);">B. RAG Task 1</div>
+          <div class="desc">
+            The same model, given <strong>up to 5 web pages</strong> (≤2,000 chars each) provided by CRAG as retrieved context.
+          </div>
+        </div>
+
+        <div class="eyebrow" style="margin: 12px 0 12px;">Dataset</div>
+        <p class="body" style="font-size: 26px;">
+          CRAG validation split — <strong>811 samples</strong> covering all five domains, all eight question types, all four dynamism levels.
+        </p>
+      </div>
+    </div>
+
+    <div class="footer"><div>CSIT 5530 / 5520 · Group Project</div><div>06 / 19</div></div>
+  </section>
+
+  <!-- ============================================================
+       07 — METHOD A: LLM-ONLY
+       ============================================================ -->
+  <section data-label="07 Method LLM-only" class="slide">
+    <div class="runner"><div class="mark">Method · Setting A</div><div>07</div></div>
+    <div class="runner-rule"></div>
+
+    <div class="title-row" style="margin-top:80px;">
+      <div class="title-num">A.</div>
+      <div class="title-block">
+        <h2 class="h-title">LLM-only — what the model knows on its own.</h2>
+        <p class="h-sub">No retrieval. No tools. A clean baseline of the model's parametric memory.</p>
+      </div>
+    </div>
+
+    <div class="grid-12" style="margin-top: 50px;">
+      <div style="grid-column: span 5;">
+        <div class="eyebrow" style="margin-bottom: 14px;">Pipeline</div>
+        <div class="hr" style="margin: 0 0 24px 0;"></div>
+        <div class="nlist" style="gap:22px;">
+          <div class="item"><div class="n">01</div><div class="t">
+            <div class="head" style="font-size:30px;">Read CRAG question</div>
+            <div class="sub" style="font-size:24px;">811 validation queries, one at a time.</div>
+          </div></div>
+          <div class="item"><div class="n">02</div><div class="t">
+            <div class="head" style="font-size:30px;">Format with LLM-only prompt</div>
+            <div class="sub" style="font-size:24px;">No external context appended.</div>
+          </div></div>
+          <div class="item"><div class="n">03</div><div class="t">
+            <div class="head" style="font-size:30px;">Generate answer</div>
+            <div class="sub" style="font-size:24px;">Greedy decoding, max 256 new tokens.</div>
+          </div></div>
+          <div class="item"><div class="n">04</div><div class="t">
+            <div class="head" style="font-size:30px;">Save prediction</div>
+            <div class="sub" style="font-size:24px;">Stored alongside gold answer for evaluation.</div>
+          </div></div>
+        </div>
+      </div>
+
+      <div style="grid-column: span 7; padding-left: 40px;">
+        <div class="eyebrow" style="margin-bottom: 14px;">Prompt template</div>
+        <div class="hr" style="margin: 0 0 24px 0;"></div>
+        <div class="pad mono" style="font-size: 24px; line-height: 1.55; color: var(--ink-2);">
+          You are a helpful assistant. Answer the following<br/>
+          question concisely and accurately.<br/><br/>
+          If you do not know the answer, say<br/>
+          <span style="color: var(--bad);">"I don't know"</span> rather than guess.<br/><br/>
+          Question: <span style="color: var(--accent);">{{ question }}</span><br/>
+          Answer:
+        </div>
+        <p class="small" style="margin-top: 22px;">
+          Mirrors the LLM-only prompt from the CRAG paper. The explicit “I don't know” option is critical: the missing rate is what separates a useful model from a hallucinating one.
+        </p>
+      </div>
+    </div>
+
+    <div class="footer"><div>CSIT 5530 / 5520 · Group Project</div><div>07 / 19</div></div>
+  </section>
+
+  <!-- ============================================================
+       08 — METHOD B: RAG TASK 1
+       ============================================================ -->
+  <section data-label="08 Method RAG" class="slide">
+    <div class="runner"><div class="mark">Method · Setting B</div><div>08</div></div>
+    <div class="runner-rule"></div>
+
+    <div class="title-row" style="margin-top:70px; margin-bottom:36px;">
+      <div class="title-num">B.</div>
+      <div class="title-block">
+        <h2 class="h-title" style="font-size:64px;">RAG Task 1 — the same model, with five web pages.</h2>
+        <p class="h-sub" style="font-size:28px;">CRAG provides web search results per question; we pack them into the prompt as retrieved context.</p>
+      </div>
+    </div>
+
+    <div class="grid-12" style="margin-top: 30px;">
+      <div style="grid-column: span 5;">
+        <div class="eyebrow" style="margin-bottom: 12px;">Retrieval budget</div>
+        <div class="hr" style="margin: 0 0 20px 0;"></div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 28px;">
+          <div class="stat" style="border-top-color: var(--accent-2); padding-top:16px;">
+            <div class="label">Pages</div>
+            <div class="value" style="font-size: 78px;">5</div>
+            <div class="delta" style="color: var(--muted); font-size:24px;">max per question</div>
+          </div>
+          <div class="stat" style="border-top-color: var(--accent-2); padding-top:16px;">
+            <div class="label">Chars / page</div>
+            <div class="value" style="font-size: 78px;">2k</div>
+            <div class="delta" style="color: var(--muted); font-size:24px;">~500 tokens each</div>
+          </div>
+          <div class="stat" style="border-top-color: var(--accent-2); padding-top:16px;">
+            <div class="label">Context</div>
+            <div class="value" style="font-size: 78px;">4k</div>
+            <div class="delta" style="color: var(--muted); font-size:24px;">tokens used (of 32k)</div>
+          </div>
+          <div class="stat" style="border-top-color: var(--accent-2); padding-top:16px;">
+            <div class="label">Max output</div>
+            <div class="value" style="font-size: 78px;">256</div>
+            <div class="delta" style="color: var(--muted); font-size:24px;">new tokens, greedy</div>
+          </div>
+        </div>
+      </div>
+
+      <div style="grid-column: span 7; padding-left: 40px;">
+        <div class="eyebrow" style="margin-bottom: 12px;">Prompt template</div>
+        <div class="hr" style="margin: 0 0 18px 0;"></div>
+        <div class="pad mono" style="font-size: 24px; line-height: 1.5; color: var(--ink-2); padding: 22px 26px;">
+          You are a helpful assistant. Use the following web<br/>
+          search results to answer the question.<br/><br/>
+          <span style="color: var(--muted);">### References</span><br/>
+          <span style="color: var(--accent-2);">{{ context }}</span><br/><br/>
+          <span style="color: var(--muted);">### Instructions</span><br/>
+          • Answer concisely from the references.<br/>
+          • If the references do not contain the answer,<br/>
+          &nbsp;&nbsp;say <span style="color: var(--bad);">"I don't know"</span>.<br/><br/>
+          Question: <span style="color: var(--accent);">{{ question }}</span><br/>
+          Answer:
+        </div>
+        <p class="small" style="margin-top: 16px; font-size:24px;">
+          Same answer rules as Setting A — only the context is added. Any improvement is attributable to retrieval, not prompt engineering.
+        </p>
+      </div>
+    </div>
+
+    <div class="footer"><div>CSIT 5530 / 5520 · Group Project</div><div>08 / 19</div></div>
+  </section>
+
+  <!-- ============================================================
+       09 — EVALUATION METRICS
+       ============================================================ -->
+  <section data-label="09 Metrics" class="slide cream">
+    <div class="runner"><div class="mark">Method · Evaluation</div><div>09</div></div>
+    <div class="runner-rule"></div>
+
+    <div class="title-row" style="margin-top:70px; margin-bottom: 28px;">
+      <div class="title-num">§</div>
+      <div class="title-block">
+        <h2 class="h-title" style="font-size:60px;">Three labels, one truthfulness score.</h2>
+        <p class="h-sub" style="font-size:26px;">The CRAG metric explicitly rewards abstention — saying nothing beats saying something wrong.</p>
+      </div>
+    </div>
+
+    <div class="grid-3" style="margin-top: 36px; gap: 56px;">
+      <div>
+        <div class="eyebrow" style="color: var(--accent-2); margin-bottom: 14px;">Accurate</div>
+        <div class="hr" style="background: var(--accent-2); margin: 0 0 22px 0;"></div>
+        <div style="font-family: var(--serif); font-weight: 500; font-size: 92px; line-height: 1; color: var(--accent-2); margin-bottom: 14px;">+1</div>
+        <p class="body" style="font-size:26px;">Prediction matches the gold answer (exact, fuzzy containment, or token F1 &gt; 0.6).</p>
+      </div>
+      <div>
+        <div class="eyebrow" style="color: var(--warn); margin-bottom: 14px;">Missing</div>
+        <div class="hr" style="background: var(--warn); margin: 0 0 22px 0;"></div>
+        <div style="font-family: var(--serif); font-weight: 500; font-size: 92px; line-height: 1; color: var(--warn); margin-bottom: 14px;">&nbsp;0</div>
+        <p class="body" style="font-size:26px;">The model abstains — “I don't know,” “not enough information,” empty response.</p>
+      </div>
+      <div>
+        <div class="eyebrow" style="color: var(--bad); margin-bottom: 14px;">Hallucination</div>
+        <div class="hr" style="background: var(--bad); margin: 0 0 22px 0;"></div>
+        <div style="font-family: var(--serif); font-weight: 500; font-size: 92px; line-height: 1; color: var(--bad); margin-bottom: 14px;">&minus;1</div>
+        <p class="body" style="font-size:26px;">A confident but wrong answer. The most expensive failure mode.</p>
+      </div>
+    </div>
+
+    <div style="margin-top: 44px; padding: 24px 32px; background: #fff; border: 1px solid var(--rule);">
+      <div style="display:flex; align-items: baseline; justify-content: space-between; gap: 40px;">
+        <div>
+          <div class="eyebrow" style="margin-bottom: 8px;">Truthfulness</div>
+          <div style="font-family: var(--serif); font-size: 38px; font-weight: 500; color: var(--ink); line-height: 1.1;">
+            mean&nbsp;score across all samples
+          </div>
+        </div>
+        <div class="mono" style="font-size: 30px; color: var(--ink-2);">
+          (#accurate − #hallucination) / N
+        </div>
+      </div>
+    </div>
+
+    <p class="small" style="margin-top: 18px; padding-bottom: 60px;">
+      We use rule-based + fuzzy matching evaluation; the original paper used dual LLM auto-evaluators (ChatGPT and Llama 3 70B). Implications discussed in the limitations section.
+    </p>
+
+    <div class="footer"><div>CSIT 5530 / 5520 · Group Project</div><div>09 / 19</div></div>
+  </section>
+
+  <!-- ============================================================
+       10 — OVERALL RESULTS — HEADLINE
+       ============================================================ -->
+  <section data-label="10 Overall Results" class="slide">
+    <div class="runner"><div class="mark">Results</div><div>10</div></div>
+    <div class="runner-rule"></div>
+
+    <div class="title-row" style="margin-top:80px;">
+      <div class="title-num">IV.</div>
+      <div class="title-block">
+        <h2 class="h-title">Retrieval cuts hallucination by a quarter.</h2>
+        <p class="h-sub">811 samples. Same model, same prompts, only context differs. Numbers in percentage points.</p>
+      </div>
+    </div>
+
+    <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 48px; margin-top: 60px;">
+      <div class="stat flat">
+        <div class="label">Accuracy</div>
+        <div class="value">19.4<span style="font-size:48px; color: var(--muted);">%</span></div>
+        <div class="delta">−0.6 pp vs LLM-only</div>
+      </div>
+      <div class="stat up">
+        <div class="label">Hallucination</div>
+        <div class="value" style="color: var(--bad);">47.0<span style="font-size:48px; color: var(--muted);">%</span></div>
+        <div class="delta" style="color: var(--accent-2);">−15.8 pp · biggest improvement</div>
+      </div>
+      <div class="stat down">
+        <div class="label">Missing</div>
+        <div class="value" style="color: var(--warn);">33.7<span style="font-size:48px; color: var(--muted);">%</span></div>
+        <div class="delta" style="color: var(--warn);">+16.4 pp · model abstains more</div>
+      </div>
+      <div class="stat up">
+        <div class="label">Truthfulness</div>
+        <div class="value" style="color: var(--accent-2);">−27.6<span style="font-size:48px; color: var(--muted);">%</span></div>
+        <div class="delta" style="color: var(--accent-2);">+15.2 pp vs LLM-only</div>
+      </div>
+    </div>
+
+    <div style="margin-top: 80px;">
+      <div class="hr thin"></div>
+      <div class="lede" style="margin-top: 36px;">
+        Accuracy is essentially flat — but the same answers shift from <strong style="color: var(--bad);">wrong</strong> to <strong style="color: var(--warn);">absent</strong>.
+        Retrieval makes the model honest before it makes it smart.
+      </div>
+    </div>
+
+    <div class="footer"><div>CSIT 5530 / 5520 · Group Project</div><div>10 / 19</div></div>
+  </section>
+
+  <!-- ============================================================
+       11 — OVERALL CHART
+       ============================================================ -->
+  <section data-label="11 Overall Chart" class="slide cream">
+    <div class="runner"><div class="mark">Results · Visualization</div><div>11</div></div>
+    <div class="runner-rule"></div>
+
+    <div class="title-row" style="margin-top:80px;">
+      <div class="title-num">§</div>
+      <div class="title-block">
+        <h2 class="h-title">The same picture, in one chart.</h2>
+        <p class="h-sub">Hallucination shrinks. The missing bar fills the gap. Accuracy barely moves.</p>
+      </div>
+    </div>
+
+    <div style="display:grid; grid-template-columns: 1.5fr 1fr; gap: 64px; margin-top: 30px; align-items: start; padding-bottom: 180px;">
+      <div class="figure">
+        <img src="figures/overall_comparison.png" alt="Overall comparison chart" style="max-height: 540px; width: auto;" />
+        <div class="cap">Fig. 1 — Qwen 3.5 9B on CRAG validation (n = 811): LLM-only vs RAG Task 1.</div>
+      </div>
+      <div>
+        <div class="eyebrow" style="margin-bottom: 18px;">Reading the chart</div>
+        <div class="hr" style="margin: 0 0 28px 0;"></div>
+        <div class="nlist" style="gap: 24px;">
+          <div class="item"><div class="n">→</div><div class="t">
+            <div class="head" style="font-size:32px;">Red bar shrinks</div>
+            <div class="sub" style="font-size:24px;">Hallucination 62.8% → 47.0%.</div>
+          </div></div>
+          <div class="item"><div class="n">→</div><div class="t">
+            <div class="head" style="font-size:32px;">Yellow bar grows</div>
+            <div class="sub" style="font-size:24px;">Missing 17.3% → 33.7%.</div>
+          </div></div>
+          <div class="item"><div class="n">→</div><div class="t">
+            <div class="head" style="font-size:32px;">Blue bar stays put</div>
+            <div class="sub" style="font-size:24px;">Accuracy 20.0% → 19.4%.</div>
+          </div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="footer"><div>CSIT 5530 / 5520 · Group Project</div><div>11 / 19</div></div>
+  </section>
+
+  <!-- ============================================================
+       12 — COMPARISON WITH PAPER
+       ============================================================ -->
+  <section data-label="12 Paper Comparison" class="slide">
+    <div class="runner"><div class="mark">Comparison with the paper</div><div>12</div></div>
+    <div class="runner-rule"></div>
+
+    <div class="title-row" style="margin-top:80px;">
+      <div class="title-num">§</div>
+      <div class="title-block">
+        <h2 class="h-title">Our 9B model vs the paper's 70B.</h2>
+        <p class="h-sub">A 7.8× smaller model, evaluated rule-based instead of LLM-judge — yet the qualitative trend is the same.</p>
+      </div>
+    </div>
+
+    <div style="margin-top: 50px;">
+      <table class="tbl">
+        <thead>
+          <tr class="group-head">
+            <th></th><th colspan="3" style="text-align:center;">Paper · Llama 3 70B Instruct</th><th colspan="3" style="text-align:center;">Ours · Qwen 3.5 9B (4-bit)</th>
+          </tr>
+          <tr>
+            <th>Setting</th>
+            <th class="num">Acc</th><th class="num">Hall</th><th class="num">Truth</th>
+            <th class="num">Acc</th><th class="num">Hall</th><th class="num">Truth</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="row-h">LLM-only</td>
+            <td class="num">32.3%</td><td class="num">28.9%</td><td class="num pos">+3.4%</td>
+            <td class="num">20.0%</td><td class="num">62.8%</td><td class="num neg">−42.8%</td>
+          </tr>
+          <tr>
+            <td class="row-h">RAG Task 1</td>
+            <td class="num">35.6%</td><td class="num">31.1%</td><td class="num pos">+4.5%</td>
+            <td class="num">19.4%</td><td class="num">47.0%</td><td class="num neg">−27.6%</td>
+          </tr>
+          <tr>
+            <td class="row-h" style="font-style:italic;">Δ from RAG</td>
+            <td class="num pos">+3.3</td><td class="num neg">+2.2</td><td class="num pos">+1.1</td>
+            <td class="num flat">−0.6</td><td class="num pos">−15.8</td><td class="num pos">+15.2</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="grid-2" style="margin-top: 56px; gap: 80px;">
+      <div>
+        <div class="eyebrow" style="margin-bottom: 12px;">What carries over</div>
+        <div class="hr" style="margin: 0 0 18px 0;"></div>
+        <p class="body" style="font-size:26px;">
+          RAG improves truthfulness in both setups. The direction is correct; CRAG's central claim reproduces.
+        </p>
+      </div>
+      <div>
+        <div class="eyebrow" style="margin-bottom: 12px;">What does not</div>
+        <div class="hr" style="margin: 0 0 18px 0;"></div>
+        <p class="body" style="font-size:26px;">
+          Absolute numbers diverge sharply — our hallucination rate is roughly 2× the paper's. We attribute this to model size, quantization, and a stricter rule-based evaluator.
+        </p>
+      </div>
+    </div>
+
+    <div class="footer"><div>CSIT 5530 / 5520 · Group Project</div><div>12 / 19</div></div>
+  </section>
+
+  <!-- ============================================================
+       13 — RESULTS BY DOMAIN
+       ============================================================ -->
+  <section data-label="13 By Domain" class="slide">
+    <div class="runner"><div class="mark">Results · By domain</div><div>13</div></div>
+    <div class="runner-rule"></div>
+
+    <div class="title-row" style="margin-top:80px;">
+      <div class="title-num">§</div>
+      <div class="title-block">
+        <h2 class="h-title">RAG helps every domain — but unevenly.</h2>
+        <p class="h-sub">Sports and movies gain the most; music remains the hardest territory.</p>
+      </div>
+    </div>
+
+    <div style="display:grid; grid-template-columns: 1.4fr 1fr; gap: 56px; margin-top: 32px; align-items: center;">
+      <div class="figure">
+        <img src="figures/truthfulness_by_domain.png" alt="Truthfulness by domain"/>
+        <div class="cap">Fig. 2 — Truthfulness by domain. Higher is better; 0 means hallucinations balance correct answers.</div>
+      </div>
+      <div>
+        <table class="tbl" style="font-size:24px;">
+          <thead>
+            <tr><th>Domain</th><th class="num">LLM</th><th class="num">RAG</th><th class="num">Δ</th></tr>
+          </thead>
+          <tbody>
+            <tr><td class="row-h">Finance</td><td class="num">−42</td><td class="num">−29</td><td class="num pos">+13</td></tr>
+            <tr><td class="row-h">Movie</td><td class="num">−40</td><td class="num">−21</td><td class="num pos">+19</td></tr>
+            <tr><td class="row-h">Music</td><td class="num">−63</td><td class="num">−45</td><td class="num pos">+18</td></tr>
+            <tr><td class="row-h">Open</td><td class="num">−35</td><td class="num">−29</td><td class="num pos">+6</td></tr>
+            <tr><td class="row-h">Sports</td><td class="num">−41</td><td class="num">−20</td><td class="num pos">+21</td></tr>
+          </tbody>
+        </table>
+        <p class="small" style="margin-top: 24px;">Truthfulness in percentage points.</p>
+      </div>
+    </div>
+
+    <div class="footer"><div>CSIT 5530 / 5520 · Group Project</div><div>13 / 19</div></div>
+  </section>
+
+  <!-- ============================================================
+       14 — RESULTS BY QUESTION TYPE
+       ============================================================ -->
+  <section data-label="14 By Question Type" class="slide cream">
+    <div class="runner"><div class="mark">Results · By question type</div><div>14</div></div>
+    <div class="runner-rule"></div>
+
+    <div class="title-row" style="margin-top:70px; margin-bottom: 28px;">
+      <div class="title-num">§</div>
+      <div class="title-block">
+        <h2 class="h-title" style="font-size:60px;">RAG rescues simple questions; complex reasoning still resists.</h2>
+        <p class="h-sub" style="font-size:26px;">Biggest gains come from lookup-shaped queries. Set, comparison, and false-premise questions are largely retrieval-proof.</p>
+      </div>
+    </div>
+
+    <div style="display: grid; grid-template-columns: 1.6fr 1fr; gap: 48px; margin-top: 16px; align-items: center;">
+      <div class="figure">
+        <img src="figures/truthfulness_by_question_type.png" alt="Truthfulness by question type"/>
+        <div class="cap" style="font-size:24px;">Fig. 3 — Truthfulness by question type.</div>
+      </div>
+      <div>
+        <div class="eyebrow" style="color: var(--accent-2); margin-bottom: 8px; font-size:24px;">Where RAG wins big</div>
+        <div class="hr" style="background: var(--accent-2); margin: 0 0 10px 0;"></div>
+        <p class="body" style="font-size: 24px; margin: 0 0 18px 0;">Simple <span class="mono" style="color: var(--muted);">+29</span> · Simple-w/-cond <span class="mono" style="color: var(--muted);">+43</span> · Multi-hop <span class="mono" style="color: var(--muted);">+41</span></p>
+
+        <div class="eyebrow" style="color: var(--warn); margin-bottom: 8px; font-size:24px;">Where RAG loses</div>
+        <div class="hr" style="background: var(--warn); margin: 0 0 10px 0;"></div>
+        <p class="body" style="font-size: 24px; margin: 0 0 18px 0;">Comparison <span class="mono" style="color: var(--muted);">−29</span> · Set <span class="mono" style="color: var(--muted);">−13</span> · Aggregation <span class="mono" style="color: var(--muted);">−1</span></p>
+
+        <div class="eyebrow" style="color: var(--bad); margin-bottom: 8px; font-size:24px;">Where neither helps</div>
+        <div class="hr" style="background: var(--bad); margin: 0 0 10px 0;"></div>
+        <p class="body" style="font-size: 24px; margin: 0;">False-premise — 0% accuracy in both settings; the model takes the bait either way.</p>
+      </div>
+    </div>
+
+    <div class="footer"><div>CSIT 5530 / 5520 · Group Project</div><div>14 / 19</div></div>
+  </section>
+
+  <!-- ============================================================
+       15 — RESULTS BY DYNAMISM
+       ============================================================ -->
+  <section data-label="15 By Dynamism" class="slide">
+    <div class="runner"><div class="mark">Results · By dynamism</div><div>15</div></div>
+    <div class="runner-rule"></div>
+
+    <div class="title-row" style="margin-top:70px; margin-bottom: 24px;">
+      <div class="title-num">§</div>
+      <div class="title-block">
+        <h2 class="h-title" style="font-size:58px;">Retrieval helps where memory cannot — except when it cannot retrieve either.</h2>
+        <p class="h-sub" style="font-size:26px;">Static facts gain 24 pp. Real-time questions barely move; the slow-changing bucket regresses.</p>
+      </div>
+    </div>
+
+    <div style="display:grid; grid-template-columns: 1.4fr 1fr; gap: 48px; margin-top: 16px; align-items: center;">
+      <div class="figure">
+        <img src="figures/truthfulness_by_dynamism.png" alt="Truthfulness by dynamism"/>
+        <div class="cap">Fig. 4 — Truthfulness by temporal dynamism. RAG dominates on static, narrows on real-time, regresses on slow-changing.</div>
+      </div>
+      <div>
+        <table class="tbl" style="font-size:24px;">
+          <thead>
+            <tr><th>Dynamism</th><th class="num">LLM</th><th class="num">RAG</th><th class="num">Δ</th></tr>
+          </thead>
+          <tbody>
+            <tr><td class="row-h">Static</td><td class="num">−51</td><td class="num">−27</td><td class="num pos">+24</td></tr>
+            <tr><td class="row-h">Slow-changing</td><td class="num">−31</td><td class="num">−38</td><td class="num neg">−7</td></tr>
+            <tr><td class="row-h">Fast-changing</td><td class="num">−40</td><td class="num">−18</td><td class="num pos">+22</td></tr>
+            <tr><td class="row-h">Real-time</td><td class="num">−26</td><td class="num">−21</td><td class="num pos">+5</td></tr>
+          </tbody>
+        </table>
+        <p class="small" style="margin-top: 24px;">Truthfulness in percentage points.</p>
+      </div>
+    </div>
+
+    <div class="footer"><div>CSIT 5530 / 5520 · Group Project</div><div>15 / 19</div></div>
+  </section>
+
+  <!-- ============================================================
+       16 — ERROR ANALYSIS
+       ============================================================ -->
+  <section data-label="16 Error Analysis" class="slide">
+    <div class="runner"><div class="mark">Error analysis</div><div>16</div></div>
+    <div class="runner-rule"></div>
+
+    <div class="title-row" style="margin-top:80px;">
+      <div class="title-num">§</div>
+      <div class="title-block">
+        <h2 class="h-title">Where the answers go when they aren't accurate.</h2>
+        <p class="h-sub">Stacked answer distribution per domain under RAG Task 1. Green is what we want; yellow is acceptable; red is not.</p>
+      </div>
+    </div>
+
+    <div style="display:grid; grid-template-columns: 1.4fr 1fr; gap: 56px; margin-top: 40px; align-items: center;">
+      <div class="figure">
+        <img src="figures/error_analysis_by_domain.png" alt="Error analysis by domain"/>
+        <div class="cap">Fig. 5 — Answer distribution by domain (RAG Task 1, n = 811).</div>
+      </div>
+      <div>
+        <div class="eyebrow" style="margin-bottom: 14px;">What stands out</div>
+        <div class="hr" style="margin: 0 0 24px 0;"></div>
+        <div class="nlist" style="gap: 22px;">
+          <div class="item"><div class="n">→</div><div class="t">
+            <div class="head" style="font-size:30px; color: var(--accent-2);">Finance is cautious</div>
+            <div class="sub" style="font-size:24px;">~57% missing — the model abstains rather than guess on numbers.</div>
+          </div></div>
+          <div class="item"><div class="n">→</div><div class="t">
+            <div class="head" style="font-size:30px; color: var(--bad);">Music is reckless</div>
+            <div class="sub" style="font-size:24px;">~60% incorrect — the model confidently invents track titles, dates, lineups.</div>
+          </div></div>
+          <div class="item"><div class="n">→</div><div class="t">
+            <div class="head" style="font-size:30px;">Open is the strongest accuracy</div>
+            <div class="sub" style="font-size:24px;">~28% accurate — generic web content is better-aligned to general questions.</div>
+          </div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="footer"><div>CSIT 5530 / 5520 · Group Project</div><div>16 / 19</div></div>
+  </section>
+
+  <!-- ============================================================
+       17 — KEY FINDINGS
+       ============================================================ -->
+  <section data-label="17 Key Findings" class="slide cream">
+    <div class="runner"><div class="mark">Synthesis</div><div>17</div></div>
+    <div class="runner-rule"></div>
+
+    <div class="title-row" style="margin-top:80px;">
+      <div class="title-num">§</div>
+      <div class="title-block">
+        <h2 class="h-title">Five things we learned.</h2>
+        <p class="h-sub">A short summary of the experimental signal across all 811 samples.</p>
+      </div>
+    </div>
+
+    <div class="grid-2" style="margin-top: 50px; gap: 80px;">
+      <div class="nlist" style="gap: 36px;">
+        <div class="item"><div class="n">01</div><div class="t">
+          <div class="head">RAG reduces hallucination, decisively.</div>
+          <div class="sub">Hallucination rate fell 15.8 pp; the most reliable effect we measured.</div>
+        </div></div>
+        <div class="item"><div class="n">02</div><div class="t">
+          <div class="head">Retrieval changes <em>what kind</em> of answer the model gives.</div>
+          <div class="sub">Wrong answers convert to abstentions, not to correct answers.</div>
+        </div></div>
+        <div class="item"><div class="n">03</div><div class="t">
+          <div class="head">The qualitative direction matches the paper.</div>
+          <div class="sub">Both 70B and 9B see RAG win on truthfulness; absolute numbers differ.</div>
+        </div></div>
+      </div>
+      <div class="nlist" style="gap: 36px;">
+        <div class="item"><div class="n">04</div><div class="t">
+          <div class="head">Static facts are the sweet spot.</div>
+          <div class="sub">Domains with structured web pages (sports, movie) gain most; music lags.</div>
+        </div></div>
+        <div class="item"><div class="n">05</div><div class="t">
+          <div class="head">RAG cannot save reasoning-shaped questions.</div>
+          <div class="sub">Comparison, set, and false-premise questions need logic, not lookup.</div>
+        </div></div>
+      </div>
+    </div>
+
+    <div class="footer"><div>CSIT 5530 / 5520 · Group Project</div><div>17 / 19</div></div>
+  </section>
+
+  <!-- ============================================================
+       18 — LIMITATIONS & FUTURE WORK
+       ============================================================ -->
+  <section data-label="18 Limitations & Future Work" class="slide">
+    <div class="runner"><div class="mark">Limitations &amp; future work</div><div>18</div></div>
+    <div class="runner-rule"></div>
+
+    <div class="title-row" style="margin-top:70px; margin-bottom: 24px;">
+      <div class="title-num">V.</div>
+      <div class="title-block">
+        <h2 class="h-title" style="font-size:60px;">What this study cannot tell you — and what we'd do next.</h2>
+        <p class="h-sub" style="font-size:26px;">A frank account of constraints, plus concrete extensions that follow from the results.</p>
+      </div>
+    </div>
+
+    <div class="grid-2" style="margin-top: 24px; gap: 80px;">
+      <!-- Limitations -->
+      <div>
+        <div class="eyebrow" style="color: var(--bad); margin-bottom: 14px;">Limitations</div>
+        <div class="hr" style="background: var(--bad); margin: 0 0 28px 0;"></div>
+        <div class="nlist" style="gap: 22px;">
+          <div class="item"><div class="n">L1</div><div class="t">
+            <div class="head" style="font-size:28px;">Single, smaller model</div>
+            <div class="sub" style="font-size:24px;">9B (4-bit) only. Not a controlled study of model size.</div>
+          </div></div>
+          <div class="item"><div class="n">L2</div><div class="t">
+            <div class="head" style="font-size:28px;">Rule-based evaluator</div>
+            <div class="sub" style="font-size:24px;">Strict on paraphrase. Likely under-counts accurate vs the paper's LLM-judge.</div>
+          </div></div>
+          <div class="item"><div class="n">L3</div><div class="t">
+            <div class="head" style="font-size:28px;">Retrieval is fixed by CRAG</div>
+            <div class="sub" style="font-size:24px;">We use the dataset's stored web pages; cannot test alternative retrievers.</div>
+          </div></div>
+          <div class="item"><div class="n">L4</div><div class="t">
+            <div class="head" style="font-size:28px;">Validation split only</div>
+            <div class="sub" style="font-size:24px;">811 of 4,409 samples. Domain slices have small n.</div>
+          </div></div>
+        </div>
+      </div>
+
+      <!-- Future work -->
+      <div>
+        <div class="eyebrow" style="color: var(--accent-2); margin-bottom: 14px;">Future work</div>
+        <div class="hr" style="background: var(--accent-2); margin: 0 0 28px 0;"></div>
+        <div class="nlist" style="gap: 22px;">
+          <div class="item"><div class="n">F1</div><div class="t">
+            <div class="head" style="font-size:28px;">Add an LLM-judge evaluator</div>
+            <div class="sub" style="font-size:24px;">Replicate CRAG's ChatGPT + 70B dual-judge to test whether the gap to the paper shrinks.</div>
+          </div></div>
+          <div class="item"><div class="n">F2</div><div class="t">
+            <div class="head" style="font-size:28px;">Implement Tasks 2 &amp; 3</div>
+            <div class="sub" style="font-size:24px;">Knowledge-graph and end-to-end retrieval — the harder CRAG tracks.</div>
+          </div></div>
+          <div class="item"><div class="n">F3</div><div class="t">
+            <div class="head" style="font-size:28px;">Targeted prompting for weak categories</div>
+            <div class="sub" style="font-size:24px;">A false-premise detector and a comparison-aware prompt for retrieval-resistant categories.</div>
+          </div></div>
+          <div class="item"><div class="n">F4</div><div class="t">
+            <div class="head" style="font-size:28px;">Scale ablation</div>
+            <div class="sub" style="font-size:24px;">Run the same pipeline on Qwen 3.5 32B / 72B to map truthfulness vs parameter count.</div>
+          </div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="footer"><div>CSIT 5530 / 5520 · Group Project</div><div>18 / 19</div></div>
+  </section>
+
+  <!-- ============================================================
+       19 — THANK YOU
+       ============================================================ -->
+  <section data-label="19 Thank You" class="slide">
+    <div class="runner"><div class="mark">CSIT 5530 / 5520 — Group Project</div><div>19</div></div>
+    <div class="runner-rule"></div>
+
+    <div style="position:absolute; left:110px; top:300px; right:110px;">
+      <div class="eyebrow" style="margin-bottom:36px;">Thank you</div>
+      <h1 class="h-display" style="margin:0;">Questions?</h1>
+      <div class="hr"></div>
+      <div class="lede" style="font-style:normal; font-size:34px; color: var(--ink-2); max-width: 1200px;">
+        We're happy to discuss method choices, evaluation trade-offs,
+        or any of the per-domain results in more depth.
+      </div>
+    </div>
+
+    <div style="position:absolute; left:110px; bottom:90px; right:110px;">
+      <div class="hr thin" style="margin-bottom:24px;"></div>
+      <div style="display:flex; justify-content: space-between; align-items: flex-end;">
+        <div>
+          <div class="small" style="margin-bottom:8px;">Team</div>
+          <div class="body" style="font-family: var(--serif); font-size: 30px; color: var(--ink);">
+            LIU Rongzheng &nbsp;·&nbsp; ZHOU Nanjun &nbsp;·&nbsp; CHEN Yuting
+          </div>
+        </div>
+        <div style="text-align: right;">
+          <div class="small" style="margin-bottom:8px;">Reference</div>
+          <div class="body" style="font-size:24px;">Yang et al., <em>CRAG — Comprehensive RAG Benchmark</em>, NeurIPS 2024</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+</deck-stage>
+
+<!-- ============================================================
+     Speaker notes
+     ============================================================ -->
+<script type="application/json" id="speaker-notes">
+[
+"Hi everyone, and thank you for taking the time. Our group — Liu Rongzheng, Zhou Nanjun, and Chen Yuting — spent the last few weeks reproducing the CRAG benchmark from Yang et al. The big question we want to answer today is simple: when we plug a retrieval system into a modern LLM, does it actually fix the hallucination problem? The honest answer turns out to be 'partially, and not where you'd expect.' That's what we'll walk through.",
+
+"Five quick chapters. We'll start with why hallucination matters at all, then introduce the CRAG benchmark itself. Then we'll get into how we measured things — the model, the prompts, the metric. We'll spend the bulk of the time on the actual numbers: overall, by domain, by question type, by dynamism. And we'll close with what this study cannot tell you, and what we'd do next.",
+
+"So why do we even need a benchmark like CRAG? Three reasons. First, coverage — long-tail facts simply aren't in the training set. Second, freshness — a frozen model has a cutoff date, and the world keeps moving. And third, and this is the one I find most important, confidence. Models almost never say 'I don't know.' They give you a wrong answer in the same fluent voice they give you the right one. RAG is supposed to fix all three at once. The question is whether it actually does, and on which kinds of questions.",
+
+"CRAG is built along three axes. Five domains — finance, movie, music, open-domain, and sports. Eight question types, ranging from a one-fact lookup all the way up to false-premise questions where the question itself contains a wrong assumption. And four levels of temporal dynamism — static facts, slow-changing, fast-changing, real-time. That third axis is what makes CRAG different from most QA benchmarks; it's exactly the dimension where parametric memory tends to break. We use the 811-sample validation split, which preserves all three axes.",
+
+"Three objectives drove our project. One: be a faithful smaller-scale reproduction — same prompts, same metrics, same dataset. Two: do it on consumer hardware. The original paper used Llama 3 70B; we used Qwen 3.5 9B in 4-bit on a single 12-gig GPU. Three: dig into where retrieval helps and where it doesn't, by slicing the 811 results across all the dimensions CRAG gives us.",
+
+"Quick setup overview before we get into method details. Qwen 3.5 9B, BitsAndBytes 4-bit NF4 quantization, about 5.9 gigabytes of VRAM after loading. RTX 5070, single GPU, batch size of one. Two settings: LLM-only, where the model has no external context, and RAG Task 1, where we give it up to five web pages from CRAG's stored search results. Same model in both cases — only the context changes. That's important because any difference is attributable to retrieval, not to anything else.",
+
+"Setting A is the LLM-only baseline. It's a clean memory test — we ask the question, no context, no tools, see what the model knows. The pipeline is straightforward: read the CRAG question, format it with the LLM-only prompt, generate up to 256 tokens greedily, save the prediction. The prompt itself is the standard CRAG-style prompt. Note one thing: we explicitly tell the model that 'I don't know' is an acceptable answer. That's not a throwaway instruction — abstention is a first-class outcome in CRAG's metric, which we'll see in a minute.",
+
+"Setting B is RAG Task 1. Same model, same generation parameters, same answer rules — the only difference is that we now prepend the retrieved context. Up to five pages, two thousand characters each, which works out to about four thousand tokens in the prompt. Qwen 3.5 has a 32K context window so we have plenty of headroom. The prompt structure: references first, then the instructions, then the question. Same answer rules, including the explicit 'I don't know' option. So any improvement we see is due to retrieval, not prompt engineering.",
+
+"And here's the metric. CRAG uses three labels per answer. Accurate gets +1, missing — meaning the model abstained — gets 0, and hallucination, a confident wrong answer, gets minus one. Truthfulness is the average across the dataset. Notice what this metric is doing: it explicitly rewards saying nothing over saying something wrong. That makes it a much more honest measure of trustworthiness than raw accuracy. One caveat: we used rule-based plus fuzzy matching for evaluation, while the paper used a dual-LLM judge. We'll come back to that.",
+
+"Now the headline result on all 811 samples. Look at the four numbers. Accuracy basically didn't move — 20.0 percent down to 19.4 percent. But hallucination dropped 15.8 points, from 62.8 down to 47. The missing rate jumped 16.4 points. And truthfulness improved by 15.2 points. Read this carefully: retrieval did not make the model smarter. It made the model more honest. The same answers it used to get wrong, it now declines to attempt. Which, given how the metric is designed, is actually the better outcome.",
+
+"Same picture in chart form. Red — hallucination — shrinks substantially. Yellow — missing — grows. Blue — accuracy — stays put. If you take one image away from this presentation, this is probably the one. The shape of the change tells you what RAG is actually doing for a 9B model: it's not adding correct knowledge so much as it is suppressing confident guessing.",
+
+"Now, how do our numbers compare to the original paper? This is where things get interesting. The paper, with Llama 3 70B and an LLM judge, hits about 32 percent accuracy LLM-only and 35.6 with RAG. We hit 20 and 19.4. Our hallucination rate is roughly twice theirs. So absolute numbers diverge a lot. But — and this is the key — the qualitative direction holds. RAG improves truthfulness in both setups. The central claim of the paper reproduces, even at one-eighth the model size and with a stricter evaluator. The gap, we think, is mostly model size, partly quantization, and partly our rule-based judge being harsher on paraphrased correct answers.",
+
+"Slicing by domain. Every domain improved with RAG, but unevenly. Sports gained 21 points, movie 19, music 18, finance 13. Open only gained 6. Why? Sports and movies have very structured web pages — rosters, dates, cast lists. The model can extract a fact almost mechanically. Music is the hardest territory in both settings, even after RAG. Track lists, less-indexed artists, B-side trivia — those are exactly the kinds of facts where web search itself is thin.",
+
+"By question type, the story is sharper. RAG rescues simple lookup-shaped questions: simple plus 29 points, simple-with-condition plus 43, multi-hop plus 41. But it loses ground on comparison — minus 29 points — and on set questions. The intuition: comparison and set questions need reasoning over multiple facts, and pulling in five web pages introduces conflicting information that the model has to reconcile. False-premise is the standout failure: zero percent accuracy in both settings. The model takes the bait either way.",
+
+"By temporal dynamism, the picture is mixed. Static facts gain 24 points — that's the sweet spot. Fast-changing gains 22. But real-time only nudges 5 points, because the search snapshot itself can be stale. And slow-changing actually regresses 7 points, which surprised us. Our reading: partial or outdated context can mislead more than no context at all. If the model has 'pretty good' memory but the retrieved page is from last year, it may now confidently produce yesterday's answer.",
+
+"Stacked answer distribution by domain under RAG. Three things stand out. Finance is cautious — about 57 percent of the time the model just abstains on numerical questions. That's a feature, not a bug. Music is the opposite — about 60 percent hallucinations, the model confidently invents. And open-domain has the highest accuracy, which makes sense; generic web content aligns well to generic questions.",
+
+"To synthesize. Five takeaways. One — RAG reduces hallucination decisively. Two — it converts wrong answers into abstentions, not into correct ones. Three — the direction matches the original paper, even at 8x smaller scale. Four — static, structured-web-page domains are the sweet spot. Five — RAG cannot save reasoning-shaped questions; those need different tooling.",
+
+"Now for the limitations and what we'd do next. Limitations first. We tested one model, at one quantization level — this is a study, not a controlled comparison across model sizes. Our evaluator is rule-based, which is stricter on paraphrase than the LLM-judge in the paper, and that almost certainly under-counts our accuracy. We use CRAG's stored web pages, not a live retriever, so we can't separate retrieval quality from generation quality. And we're on the validation split, so some per-domain slices have a small n. On the future-work side: replace the rule-based judge with an LLM-judge to make the comparison fairer; implement Tasks 2 and 3, which test knowledge-graph and end-to-end retrieval; build targeted prompts for the categories where RAG actively hurts, especially comparison and false-premise; and run a scale ablation on the 32B and 72B versions of Qwen to map how truthfulness tracks parameter count.",
+
+"That's our reproduction. We're happy to discuss any of the methodological choices — quantization, the evaluator, the prompt format — or to dig into the per-domain numbers in more detail. Thank you very much for your time."
+]
+</script>
+
+</body>
+</html>
