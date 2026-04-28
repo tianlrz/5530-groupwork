@@ -201,7 +201,11 @@
   }
 
   function sendNav(action){
-    var msg = { type:'deck-nav', action:action };
+    var msg = {
+      type:'deck-nav',
+      action:action,
+      id:'nav-'+Date.now()+'-'+Math.random().toString(36).slice(2)
+    };
     if(bc) bc.postMessage(msg);
     try{ localStorage.setItem('deck-stage:presenter:nav', JSON.stringify(Object.assign({t:Date.now()},msg))); }catch(_){}
     if(window.opener) window.opener.postMessage(msg,'*');
@@ -326,6 +330,7 @@
       this._presenterBlobURL = null;
       this._presenterPollTimer = null;
       this._bc = null;
+      this._seenPresenterNav = new Set();
 
       this._onKey        = this._onKey.bind(this);
       this._onResize     = this._onResize.bind(this);
@@ -609,6 +614,14 @@
     _handlePresenterMsg(data) {
       if (!data) return;
       if (data.type === 'deck-nav') {
+        if (data.id) {
+          if (this._seenPresenterNav.has(data.id)) return;
+          this._seenPresenterNav.add(data.id);
+          if (this._seenPresenterNav.size > 80) {
+            const first = this._seenPresenterNav.values().next().value;
+            this._seenPresenterNav.delete(first);
+          }
+        }
         if (data.action === 'next') this._go(this._index + 1, 'api');
         if (data.action === 'prev') this._go(this._index - 1, 'api');
       }
