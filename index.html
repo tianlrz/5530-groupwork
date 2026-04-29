@@ -816,16 +816,20 @@
           <div class="body" style="font-size:26px;">
             <div
               style="display:flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid var(--rule);">
-              <span>Finance</span><span class="mono" style="color:var(--muted);">199</span></div>
+              <span>Finance</span><span class="mono" style="color:var(--muted);">199</span>
+            </div>
             <div
               style="display:flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid var(--rule);">
-              <span>Movie</span><span class="mono" style="color:var(--muted);">177</span></div>
+              <span>Movie</span><span class="mono" style="color:var(--muted);">177</span>
+            </div>
             <div
               style="display:flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid var(--rule);">
-              <span>Music</span><span class="mono" style="color:var(--muted);">112</span></div>
+              <span>Music</span><span class="mono" style="color:var(--muted);">112</span>
+            </div>
             <div
               style="display:flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid var(--rule);">
-              <span>Open</span><span class="mono" style="color:var(--muted);">156</span></div>
+              <span>Open</span><span class="mono" style="color:var(--muted);">156</span>
+            </div>
             <div style="display:flex; justify-content: space-between; padding: 10px 0;"><span>Sports</span><span
                 class="mono" style="color:var(--muted);">167</span></div>
           </div>
@@ -1941,7 +1945,7 @@
 
 "Five quick chapters. We'll start with why hallucination matters at all, then introduce the CRAG benchmark itself. Then we'll get into how we measured things — the model, the prompts, the metric. We'll spend the bulk of the time on the actual numbers: overall, by domain, by question type, by dynamism. And we'll close with what this study cannot tell you, and what we'd do next.",
 
-"So why do we even need a benchmark like CRAG? Three reasons. First, coverage — long-tail facts simply aren't in the training set. Second, freshness — a frozen model has a cutoff date, and the world keeps moving. And third, and this is the one I find most important, confidence. Models almost never say 'I don't know.' They give you a wrong answer in the same fluent voice they give you the right one. RAG is supposed to fix all three at once. The question is whether it actually does, and on which kinds of questions.",
+"So why do we even need a benchmark like CRAG? Three reasons. First, coverage LLMs are trained on finite data, that means long-tail facts simply aren't in the training set. Second, freshness —Once a model is trained, its weights are frozen so the model has a cutoff date, but the world keeps moving. And third, the most important and dangerous, the confidence. Models almost never say 'I don't know.' They give you a wrong answer in the same fluent voice they give you the right one. This false confidence is what makes hallucinations so harmful in real applications. RAG is supposed to fix all three at once. The question is whether it actually does, and on which kinds of questions.",
 
 "CRAG is built along three axes. Five domains — finance, movie, music, open-domain, and sports. Eight question types, ranging from a one-fact lookup all the way up to false-premise questions where the question itself contains a wrong assumption. And four levels of temporal dynamism — static facts, slow-changing, fast-changing, real-time. That third axis is what makes CRAG different from most QA benchmarks; it's exactly the dimension where parametric memory tends to break. We use the 811-sample validation split, which preserves all three axes.",
 
