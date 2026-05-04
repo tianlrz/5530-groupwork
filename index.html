@@ -2202,6 +2202,8 @@
 
 "Setting B is RAG Task 1. Same model, same generation parameters, same answer rules — the only difference is that we now prepend the retrieved context. Up to five pages, two thousand characters each, which works out to about four thousand tokens in the prompt. Qwen 3.5 has a 32K context window so we have plenty of headroom. The prompt structure: references first, then the instructions, then the question. Same answer rules, including the explicit 'I don't know' option. So any improvement we see is due to retrieval, not prompt engineering.",
 
+"",
+
 "And here's the metric. CRAG uses three labels per answer. Accurate gets +1, missing — meaning the model abstained — gets 0, and hallucination, a confident wrong answer, gets minus one. Truthfulness is the average across the dataset. Notice what this metric is doing: it explicitly rewards saying nothing over saying something wrong. That makes it a much more honest measure of trustworthiness than raw accuracy. One caveat: we used rule-based plus fuzzy matching for evaluation, while the paper used a dual-LLM judge. We'll come back to that.",
 
 "Now the headline result on all 811 samples. Look at the four numbers. Accuracy basically didn't move — 20.0 percent down to 19.4 percent. But hallucination dropped 15.8 points, from 62.8 down to 47. The missing rate jumped 16.4 points. And truthfulness improved by 15.2 points. Read this carefully: retrieval did not make the model smarter. It made the model more honest. The same answers it used to get wrong, it now declines to attempt. Which, given how the metric is designed, is actually the better outcome.",
